@@ -38,30 +38,52 @@ def parse_args():
 
     return args 
 
+def file_write(signal: InputSignalData):
+    # Get current date/time as a string
+    timestamp = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+
+    # Build filename with timestamp
+    filename = f"/InSig_{timestamp}.npz"
+
+    file_save_path = Path(__file__).parent.parent / 'Resources' / 'Input Signal Files'
+
+    np.savez(str(file_save_path)+filename,
+         metadata=np.array([str(signal.metadata)]),
+         SIN=signal.SIN,
+         COS=signal.COS,
+         t=signal.t)
+    
+
+def signal_construction(args):
+    # Validate mandatory fields
+    mandatory_fields = [
+        "reference_frequency",   # Hz
+        "reference_amplitude",   # V
+        "sample_rate",           # S/s
+        "signal_time_length",    # s
+        "revolving_manner",      # "arbitrary" or "non_arbitrary"
+        "revolving_frequency"    # Hz (only if manner == non_arbitrary)
+    ]
+    
+    
+    t = np.linspace(0, args.signal_time_length, int(args.signal_time_length * args.sample_rate))
+    SIN = np.sin(2 * np.pi * args.reference_frequency * t)
+    COS = np.cos(2 * np.pi * args.reference_frequency * t)
+    
+    # TODO: Implement revolving frequency modulation
+    
+    signal = InputSignalData(
+        SIN=SIN,
+        COS=COS,
+        t=t,
+        metadata=dict(vars(args)))
+    
+    return signal
+
 args = parse_args()
 
-# Example data
-t = np.linspace(0, 1, 1000)
-sin_values = np.sin(2 * np.pi * 100 * t)
-cos_values = np.cos(2 * np.pi * 100 * t)
+# Assembly signal data
+signal = signal_construction(args)
 
-signal = InputSignalData(
-    SIN=sin_values,
-    COS=cos_values,
-    t=t,
-    metadata=dict(vars(args))
-)
+file_write(signal)
 
-# Get current date/time as a string
-timestamp = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-
-# Build filename with timestamp
-filename = f"/InSig_{timestamp}.npz"
-
-file_save_path = Path(__file__).parent.parent / 'Resources' / 'Input Signal Files'
-
-np.savez(str(file_save_path)+filename,
-         arr1=signal.SIN,
-         arr2=signal.COS,
-         arr3=signal.t)
-         #metadata=np.array([str(signal.metadata)]))  # Save as string
