@@ -1,6 +1,9 @@
 import argparse, sys
 import numpy as np
 from InputSignalData import InputSignalData # type: ignore
+from pathlib import Path
+from datetime import datetime
+import os
 
 #Input arguments parser
 def parse_args():
@@ -42,17 +45,23 @@ t = np.linspace(0, 1, 1000)
 sin_values = np.sin(2 * np.pi * 100 * t)
 cos_values = np.cos(2 * np.pi * 100 * t)
 
-ddd = vars(args)
-
-print("args")
-print(dict(ddd))
-
 signal = InputSignalData(
     SIN=sin_values,
     COS=cos_values,
     t=t,
-    metadata=dict(ddd)
+    metadata=dict(vars(args))
 )
 
+# Get current date/time as a string
+timestamp = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
 
-print(signal)
+# Build filename with timestamp
+filename = f"/InSig_{timestamp}.npz"
+
+file_save_path = Path(__file__).parent.parent / 'Resources' / 'Input Signal Files'
+
+np.savez(str(file_save_path)+filename,
+         arr1=signal.SIN,
+         arr2=signal.COS,
+         arr3=signal.t)
+         #metadata=np.array([str(signal.metadata)]))  # Save as string
