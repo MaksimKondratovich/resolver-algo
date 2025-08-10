@@ -1,5 +1,41 @@
+import argparse, sys
 import numpy as np
 from InputSignalData import InputSignalData # type: ignore
+
+#Input arguments parser
+def parse_args():
+    parser = argparse.ArgumentParser(description="Parse signal parameters.")
+
+    # Mandatory arguments
+    parser.add_argument('--reference-frequency', type=float, required=True,
+                        help='Reference frequency in Hz')
+    parser.add_argument('--reference-amplitude', type=float, required=True,
+                        help='Reference amplitude in Volts')
+    parser.add_argument('--sample-rate', type=float, required=True,
+                        help='Sample rate in Samples per second (S/s)')
+    parser.add_argument('--signal-time-length', type=float, required=True,
+                        help='Signal time length in seconds')
+    parser.add_argument('--revolving-manner', type=str, required=True, choices=['arbitrary', 'non-arbitrary'],
+                        help='Revolving manner: "arbitrary" or "non-arbitrary"')
+
+    # Revolving frequency only required if manner == 'non-arbitrary'
+    parser.add_argument('--revolving-frequency', type=float,
+                        help='Revolving frequency in Hz (required if manner is non-arbitrary)')
+    
+    args, unknown = parser.parse_known_args()
+    
+    if unknown:
+        print("Warning: Unknown arguments detected:", file=sys.stderr)
+        for arg in unknown:
+            print(f"  {arg}", file=sys.stderr)
+
+    # Enforce conditional required argument
+    if args.revolving_manner == 'non-arbitrary' and args.revolving_frequency is None:
+        parser.error("--revolving-frequency is required when --revolving-manner is 'non-arbitrary'")
+
+    return args 
+
+args = parse_args()
 
 # Example data
 t = np.linspace(0, 1, 1000)
@@ -21,5 +57,5 @@ signal = InputSignalData(
     }
 )
 
-print(signal.get_metadata("Reference frequency"))  # 100.0
-print(signal)
+#print(signal.get_metadata("Reference frequency"))  # 100.0
+#print(signal)
