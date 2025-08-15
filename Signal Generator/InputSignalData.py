@@ -24,6 +24,7 @@ class InputSignalData:
             "signal_time_length",    # s
             "revolving_manner",      # "arbitrary" or "non_arbitrary"
             "revolving_frequency"    # Hz (only if manner == non_arbitrary)
+            "pole-number",           # int, number of poles in resolver
         ]
         missing = [f for f in mandatory_fields if f not in self.metadata]
         if missing:
@@ -59,6 +60,10 @@ class InputSignalData:
         if m["revolving_manner"] == "non_arbitrary":
             if not (0 <= m["reference_frequency"] <= 25_000):
                 raise ValueError("Revolving frequency must be between 0 Hz and 25 kHz for non-arbitrary manner.")
+        
+        # Pole number: 1–10
+        if not (1 <= m.get("pole-number", 1) <= 10):
+            raise ValueError("Pole number must be between 1 and 10.")
 
     def add_metadata(self, key: str, value: Any):
         self.metadata[key] = value

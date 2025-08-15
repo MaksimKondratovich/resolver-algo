@@ -25,6 +25,9 @@ def parse_args():
     parser.add_argument('--revolving_frequency', type=float,
                         help='Revolving frequency in Hz (required if manner is non-arbitrary)')
     
+    parser.add_argument('--pole-number', type=int, default=2,
+                        help='Number of poles in resolver (default: 2)')
+    
     args, unknown = parser.parse_known_args()
     
     if unknown:
@@ -44,6 +47,8 @@ def file_write(signal: InputSignalData):
 
     # Build filename with timestamp
     filename = f"/InSig_{timestamp}.npz"
+    
+    print(f"Saving signal data to: {filename}")
 
     file_save_path = Path(__file__).parent.parent / 'Resources' / 'Input Signal Files'
 
@@ -63,14 +68,22 @@ def signal_construction(args):
         "signal_time_length",    # s
         "revolving_manner",      # "arbitrary" or "non_arbitrary"
         "revolving_frequency"    # Hz (only if manner == non_arbitrary)
+        "pole-number",           # int, number of poles in resolver
     ]
     
     
     t = np.linspace(0, args.signal_time_length, int(args.signal_time_length * args.sample_rate))
-    SIN = np.sin(2 * np.pi * args.reference_frequency * t)
-    COS = np.cos(2 * np.pi * args.reference_frequency * t)
     
-    # TODO: Implement revolving frequency modulation
+    REF = np.cos(2 * np.pi * args.reference_frequency * t) * args.reference_amplitude
+    
+    if args.revolving_manner == 'arbitrary':{}
+        # Arbitrary revolving frequency, use reference frequency
+        # TODO: Implement arbitrary revolving frequency modulation
+        
+    elif args.revolving_manner == 'non_arbitrary':
+        SIN = np.sin(2 * np.pi * args.revolving_frequency * t) * REF
+        COS = np.cos(2 * np.pi * args.revolving_frequency * t) * REF
+
     
     signal = InputSignalData(
         SIN=SIN,
