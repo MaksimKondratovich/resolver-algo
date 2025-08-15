@@ -25,7 +25,7 @@ def parse_args():
     parser.add_argument('--revolving_frequency', type=float,
                         help='Revolving frequency in Hz (required if manner is non-arbitrary)')
     
-    parser.add_argument('--pole-number', type=int, default=2,
+    parser.add_argument('--pole_number', type=int, default=2,
                         help='Number of poles in resolver (default: 2)')
     
     args, unknown = parser.parse_known_args()
